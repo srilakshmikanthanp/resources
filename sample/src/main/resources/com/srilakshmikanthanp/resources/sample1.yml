@@ -4,7 +4,7 @@ implementing: com.srilakshmikanthanp.resources.MainResource
 
 resources:
   config:
-    file: config.yml
+    file: sample1.yml
 
   echo:
     inline: echo "Hello, World"

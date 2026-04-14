@@ -15,7 +15,7 @@
         <xs:complexType>
           <xs:simpleContent>
             <xs:extension base="xs:string">
-              <xs:attribute name="type" type="resourceFieldType" use="optional"/>
+              <xs:attribute name="type" type="resourceFieldType"/>
             </xs:extension>
           </xs:simpleContent>
         </xs:complexType>
@@ -23,7 +23,7 @@
 			<xs:element name="file">
 				<xs:complexType>
 					<xs:attribute name="path" type="xs:string" use="required"/>
-          <xs:attribute name="type" type="resourceFieldType" use="optional"/>
+          <xs:attribute name="type" type="resourceFieldType"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:choice>
@@ -32,12 +32,14 @@
 	<xs:element name="resources">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="resource" maxOccurs="unbounded">
-					<xs:complexType>
-            <xs:group ref="inlineOrFile"/>
-						<xs:attribute name="name" type="xs:string" use="required"/>
-					</xs:complexType>
-				</xs:element>
+        <xs:element name="resource" maxOccurs="unbounded">
+          <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="1">
+              <xs:group ref="inlineOrFile"/>
+            </xs:choice>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+          </xs:complexType>
+        </xs:element>
 			</xs:sequence>
 			<xs:attribute name="name" type="xs:string" use="required"/>
 			<xs:attribute name="package" type="xs:string" use="required"/>

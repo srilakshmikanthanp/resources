@@ -1,0 +1,13 @@
+<resources package="com.srilakshmikanthanp.resources" name="TestXml" implementing="com.srilakshmikanthanp.resources.TestResource">
+	<resource name="echo">
+		<inline>echo "Hello, World"</inline>
+	</resource>
+
+  <resource name="print">
+    print "Hello, World"
+  </resource>
+
+	<resource name="config">
+		<file path="sample.xml"/>
+	</resource>
+</resources>

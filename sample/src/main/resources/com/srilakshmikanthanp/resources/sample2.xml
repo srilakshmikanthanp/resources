@@ -1,5 +1,5 @@
 <resources package="com.srilakshmikanthanp.resources" name="Sample2Xml">
   <resource name="echo">
-    <inline>echo "Hello, World"</inline>
+    echo "Hello, World"
   </resource>
 </resources>

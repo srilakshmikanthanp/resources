@@ -1,0 +1,12 @@
+package: com.srilakshmikanthanp.resources
+name: TestYml
+implementing: com.srilakshmikanthanp.resources.TestResource
+
+resources:
+  echo:
+    inline: echo "Hello, World"
+
+  print: print "Hello, World"
+
+  config:
+    file: sample.yml

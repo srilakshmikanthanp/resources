@@ -1,5 +1,6 @@
 plugins {
   `java-library`
+  kotlin("jvm")
 }
 
 version = "1.0.0"
@@ -14,6 +15,7 @@ dependencies {
 	implementation("com.palantir.javapoet:javapoet:0.12.0")
 	implementation("org.yaml:snakeyaml:2.2")
   implementation(project(":resources-runtime"))
+  implementation(kotlin("stdlib-jdk8"))
 }
 
 java {

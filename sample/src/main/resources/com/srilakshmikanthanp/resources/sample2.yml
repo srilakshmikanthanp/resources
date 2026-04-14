@@ -2,5 +2,4 @@ package: com.srilakshmikanthanp.resources
 name: Sample2Yml
 
 resources:
-  echo:
-    inline: echo "Hello, World"
+  echo: echo "Hello, World"

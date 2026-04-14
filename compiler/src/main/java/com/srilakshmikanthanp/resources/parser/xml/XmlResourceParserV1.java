@@ -4,10 +4,12 @@ import com.srilakshmikanthanp.resources.parser.ResourceParser;
 import com.srilakshmikanthanp.resources.parser.ResourceParserException;
 import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
 import com.srilakshmikanthanp.resources.tree.resource.ResourceNode;
-import com.srilakshmikanthanp.resources.tree.resource.body.*;
+import com.srilakshmikanthanp.resources.tree.resource.body.FileResourceBodyNode;
+import com.srilakshmikanthanp.resources.tree.resource.body.InlineResourceBodyNode;
+import com.srilakshmikanthanp.resources.tree.resource.body.ResourceBodyNode;
+import com.srilakshmikanthanp.resources.tree.resource.body.ResourceFieldType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -35,27 +37,27 @@ public class XmlResourceParserV1 implements ResourceParser {
     String name = element.getAttribute(NAME_ATTR);
     String implementing = element.hasAttribute(IMPLEMENTING_ATTR) ? element.getAttribute(IMPLEMENTING_ATTR) : null;
     ResourceBundleNode bundle = new ResourceBundleNode(packageName, name, implementing);
+    this.parseResources(bundle, element);
+    return bundle;
+  }
+
+  private void parseResources(ResourceBundleNode bundle, Element element) {
     for (int i = 0; i < element.getChildNodes().getLength(); i++) {
       if (element.getChildNodes().item(i).getNodeType() == Element.ELEMENT_NODE) {
         bundle.addResource(parseResourceNode((Element) element.getChildNodes().item(i)));
       }
     }
-    return bundle;
   }
 
   private ResourceNode parseResourceNode(Element element) {
-    Node firstNode = (Element) element.getElementsByTagName("*").item(0);
-    String resourceName = element.getAttribute(NAME_ATTR);
-    return new ResourceNode(resourceName, parseResourceBody(firstNode));
+    return new ResourceNode(element.getAttribute(NAME_ATTR), parseResourceBody(element));
   }
 
-  private ResourceBodyNode parseResourceBody(Node node) {
-    if (node.getNodeType() != Node.ELEMENT_NODE) {
-      return new InlineResourceBodyNode(node.getTextContent(), ResourceFieldType.STRING);
+  private ResourceBodyNode parseResourceBody(Element node) {
+    Element element = (Element) node.getElementsByTagName("*").item(0);
+    if (element == null) {
+      return new InlineResourceBodyNode(node.getTextContent());
     }
-
-    var element = (Element) node;
-
     if (element.getTagName().equals(FILE_TAG)) {
       ResourceFieldType type = element.hasAttribute(TYPE_ATTR) ? ResourceFieldType.valueOf(element.getAttribute(TYPE_ATTR)) : ResourceFieldType.STREAM;
       String filePath = element.getAttribute(PATH_ATTR);
@@ -83,6 +85,7 @@ public class XmlResourceParserV1 implements ResourceParser {
       factory.setNamespaceAware(true);
       factory.setSchema(getSchema());
       DocumentBuilder builder = factory.newDocumentBuilder();
+      builder.setErrorHandler(new XmlResourceParserErrorHandler());
       Document document = builder.parse(stream);
       document.getDocumentElement().normalize();
       return parseResourceBundleNode(document.getDocumentElement());
