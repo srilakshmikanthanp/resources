@@ -95,4 +95,4 @@ public final class Sample1Yml implements com.srilakshmikanthanp.resources.MainRe
 ```
 
 Implementing interface in the resource file is optional. If you don't specify it, the generated class
-will not implement any interface. But is good for decoupling.
+will not implement any interface. But it is good for decoupling.
