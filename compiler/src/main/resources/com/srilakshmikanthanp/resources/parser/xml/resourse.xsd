@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <xs:simpleType name="resourceFieldType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="STRING"/>
+      <xs:enumeration value="BYTES"/>
+      <xs:enumeration value="STREAM"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+	<xs:group name="inlineOrFile">
+		<xs:choice>
+      <xs:element name="inline">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:string">
+              <xs:attribute name="type" type="resourceFieldType" use="optional"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+			<xs:element name="file">
+				<xs:complexType>
+					<xs:attribute name="path" type="xs:string" use="required"/>
+          <xs:attribute name="type" type="resourceFieldType" use="optional"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:group>
+
+	<xs:element name="resources">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="resource" maxOccurs="unbounded">
+					<xs:complexType>
+            <xs:group ref="inlineOrFile"/>
+						<xs:attribute name="name" type="xs:string" use="required"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+			<xs:attribute name="package" type="xs:string" use="required"/>
+      <xs:attribute name="implementing" type="xs:string"/>
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>

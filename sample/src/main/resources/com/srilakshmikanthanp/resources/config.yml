@@ -1,0 +1,14 @@
+# Sample Yml
+config:
+  database:
+    host: localhost
+    port: 3306
+    username: root
+    password: password
+    dbname: mydb
+  server:
+    port: 8080
+    contextPath: /api
+  logging:
+    level: INFO
+    file: app.log

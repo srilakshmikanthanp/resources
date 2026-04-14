@@ -1,0 +1,31 @@
+package com.srilakshmikanthanp.resources;
+
+import com.srilakshmikanthanp.resources.compiler.CompiledResource;
+import com.srilakshmikanthanp.resources.compiler.ResourceCompiler;
+import com.srilakshmikanthanp.resources.parser.ResourceParser;
+import com.srilakshmikanthanp.resources.preprocessor.ResourcePreprocessor;
+import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Orchestrator {
+  private final List<ResourcePreprocessor> preprocessors = new ArrayList<>();
+
+  private ResourceBundleNode preprocess(ResourceBundleNode resourceBundle) {
+    return preprocessors.stream().reduce(resourceBundle, (bundle, preprocessor) -> preprocessor.process(bundle), (a, b) -> b);
+  }
+
+  public void addPreprocessor(ResourcePreprocessor preprocessor) {
+    preprocessors.add(preprocessor);
+  }
+
+  public boolean removePreprocessor(ResourcePreprocessor preprocessor) {
+    return preprocessors.remove(preprocessor);
+  }
+
+  public List<CompiledResource> compile(ResourceParser parser, ResourceCompiler compiler, InputStream input) {
+    return compiler.compile(preprocess(parser.parse(input)));
+  }
+}

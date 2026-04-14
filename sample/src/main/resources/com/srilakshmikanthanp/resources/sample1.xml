@@ -1,0 +1,9 @@
+<resources package="com.srilakshmikanthanp.resources" name="Sample1Xml" implementing="com.srilakshmikanthanp.resources.MainResource">
+	<resource name="echo">
+		<inline>echo "Hello, World"</inline>
+	</resource>
+
+	<resource name="config">
+		<file path="config.xml"/>
+	</resource>
+</resources>

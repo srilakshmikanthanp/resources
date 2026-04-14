@@ -1,0 +1,27 @@
+plugins {
+  `java-library`
+}
+
+version = "1.0.0"
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  testImplementation(libs.junit.jupiter)
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	implementation("com.palantir.javapoet:javapoet:0.12.0")
+	implementation("org.yaml:snakeyaml:2.2")
+  implementation(project(":resources-runtime"))
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+}
+
+tasks.named<Test>("test") {
+  useJUnitPlatform()
+}
