@@ -61,6 +61,7 @@ package com.srilakshmikanthanp.resources;
 import com.srilakshmikanthanp.resources.resource.FileResource;
 import com.srilakshmikanthanp.resources.resource.InlineResource;
 import java.io.InputStream;
+import java.lang.Override;
 import java.lang.String;
 
 public final class Sample1Xml implements com.srilakshmikanthanp.resources.MainResource {
@@ -69,21 +70,23 @@ public final class Sample1Xml implements com.srilakshmikanthanp.resources.MainRe
   private Sample1Xml() {
   }
 
+  @Override
   public String echo() {
     return new InlineResource("echo \"Hello, World\"").asString();
   }
 
+  @Override
   public String print() {
     return new InlineResource("\n"
       + "    echo \"Hello, World\"\n"
       + "  ").asString();
   }
 
+  @Override
   public InputStream config() {
     return new FileResource(getClass().getResource("sample1.xml").getPath()).asStream();
   }
 }
-
 ```
 
 ```java
@@ -92,6 +95,7 @@ package com.srilakshmikanthanp.resources;
 import com.srilakshmikanthanp.resources.resource.FileResource;
 import com.srilakshmikanthanp.resources.resource.InlineResource;
 import java.io.InputStream;
+import java.lang.Override;
 import java.lang.String;
 
 public final class Sample1Yml implements com.srilakshmikanthanp.resources.MainResource {
@@ -100,19 +104,21 @@ public final class Sample1Yml implements com.srilakshmikanthanp.resources.MainRe
   private Sample1Yml() {
   }
 
+  @Override
+  public String print() {
+    return new InlineResource("echo \"Hello, World\"").asString();
+  }
+
+  @Override
   public InputStream config() {
     return new FileResource(getClass().getResource("sample1.yml").getPath()).asStream();
   }
 
+  @Override
   public String echo() {
     return new InlineResource("echo \"Hello, World\"").asString();
   }
-
-  public String print() {
-    return new InlineResource("echo \"Hello, World\"").asString();
-  }
 }
-
 ```
 
 Interface is optional. If you don't need it, annotate in @Resource in package-info.java file

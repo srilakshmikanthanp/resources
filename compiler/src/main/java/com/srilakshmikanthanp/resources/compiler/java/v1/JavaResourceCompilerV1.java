@@ -22,20 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JavaResourceCompilerV1 implements ResourceCompiler {
-  private MethodSpec fileResource(String resourceName, FileResourceBodyNode resourceNode) {
+  private MethodSpec.Builder fileResource(String resourceName, FileResourceBodyNode resourceNode) {
     return MethodSpec.methodBuilder(resourceName)
       .addModifiers(Modifier.PUBLIC)
       .returns(getResourceClass(resourceNode.type()))
-      .addStatement("return $L",  CodeBlock.of("new $T(getClass().getResource($S).getPath()).$L", FileResource.class, resourceNode.path(), getConversion(resourceNode.type())))
-      .build();
+      .addStatement("return $L",  CodeBlock.of("new $T(getClass().getResource($S).getPath()).$L", FileResource.class, resourceNode.path(), getConversion(resourceNode.type())));
   }
 
-	private MethodSpec inlineResource(String resourceName, InlineResourceBodyNode resourceNode) {
+	private MethodSpec.Builder inlineResource(String resourceName, InlineResourceBodyNode resourceNode) {
 		return MethodSpec.methodBuilder(resourceName)
       .addModifiers(Modifier.PUBLIC)
       .returns(getResourceClass(resourceNode.type()))
-      .addStatement("return $L", CodeBlock.of("new $T($S).$L", InlineResource.class, resourceNode.content(), getConversion(resourceNode.type())))
-      .build();
+      .addStatement("return $L", CodeBlock.of("new $T($S).$L", InlineResource.class, resourceNode.content(), getConversion(resourceNode.type())));
 	}
 
   private Class<?> getResourceClass(ResourceFieldType type) {
@@ -67,6 +65,11 @@ public class JavaResourceCompilerV1 implements ResourceCompiler {
 	@Override
 	public List<CompiledResource> compile(Context context, ResourceBundleNode bundle) {
 		TypeSpec.Builder resourceBuilder = TypeSpec.classBuilder(bundle.name()).addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+    boolean hasParent = switch (context.resourceElement()) {
+      case InterfaceResourceElement ignored -> true;
+      case ClassResourceElement ignored -> true;
+      case PackageResourceElement ignored -> false;
+    };
 
     resourceBuilder.addField(instanceField(context.resourceElement().packageName(), bundle.name()));
     resourceBuilder.addMethod(constructor());
@@ -77,12 +80,22 @@ public class JavaResourceCompilerV1 implements ResourceCompiler {
       case PackageResourceElement ignored -> {}
     }
 
+    List<MethodSpec.Builder> methods = new ArrayList<>();
+
 		for (ResourceNode resource : bundle.resources()) {
       switch (resource.body()) {
-        case InlineResourceBodyNode body -> resourceBuilder.addMethod(inlineResource(resource.name(), body));
-        case FileResourceBodyNode body -> resourceBuilder.addMethod(fileResource(resource.name(), body));
+        case InlineResourceBodyNode body -> methods.add(inlineResource(resource.name(), body));
+        case FileResourceBodyNode body -> methods.add(fileResource(resource.name(), body));
       }
 		}
+
+    for (MethodSpec.Builder method : methods) {
+      if (hasParent) {
+        resourceBuilder.addMethod(method.addAnnotation(Override.class).build());
+      } else {
+        resourceBuilder.addMethod(method.build());
+      }
+    }
 
 		TypeSpec resource = resourceBuilder.build();
 
