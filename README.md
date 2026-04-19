@@ -44,7 +44,7 @@ Then, annotate with `@Resource`
 ```java
 @Resource(path = "sample1.xml", parser = ParserType.XML_V1, compiler = CompilerType.JAVA_V1)
 @Resource(path = "sample1.yml", parser = ParserType.YML_V1, compiler = CompilerType.JAVA_V1)
-public interface MainResource {
+public interface MainResourceInterface {
   String print();
   String echo();
   InputStream config();
@@ -64,7 +64,7 @@ import java.io.InputStream;
 import java.lang.Override;
 import java.lang.String;
 
-public final class Sample1Xml implements com.srilakshmikanthanp.resources.MainResource {
+public final class Sample1Xml implements com.srilakshmikanthanp.resources.MainResourceInterface {
   public static final Sample1Xml INSTANCE = new Sample1Xml();
 
   private Sample1Xml() {
@@ -98,7 +98,7 @@ import java.io.InputStream;
 import java.lang.Override;
 import java.lang.String;
 
-public final class Sample1Yml implements com.srilakshmikanthanp.resources.MainResource {
+public final class Sample1Yml implements com.srilakshmikanthanp.resources.MainResourceInterface {
   public static final Sample1Yml INSTANCE = new Sample1Yml();
 
   private Sample1Yml() {
