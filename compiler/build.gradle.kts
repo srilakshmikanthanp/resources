@@ -16,11 +16,15 @@ dependencies {
 	implementation("org.yaml:snakeyaml:2.2")
   implementation(project(":resources-runtime"))
   implementation(kotlin("stdlib-jdk8"))
+  compileOnly("org.projectlombok:lombok:1.18.44")
+  annotationProcessor("org.projectlombok:lombok:1.18.44")
+  testCompileOnly("org.projectlombok:lombok:1.18.44")
+  testAnnotationProcessor("org.projectlombok:lombok:1.18.44")
 }
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(17)
+    languageVersion = JavaLanguageVersion.of(21)
   }
 }
 

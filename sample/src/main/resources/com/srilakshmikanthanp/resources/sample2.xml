@@ -1,4 +1,4 @@
-<resources package="com.srilakshmikanthanp.resources" name="Sample2Xml">
+<resources name="Sample2Xml">
   <resource name="echo">
     echo "Hello, World"
   </resource>

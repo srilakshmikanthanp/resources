@@ -1,4 +1,4 @@
-<resources package="com.srilakshmikanthanp.resources" name="TestXml" implementing="com.srilakshmikanthanp.resources.TestResource">
+<resources name="TestXml">
 	<resource name="echo">
 		<inline>echo "Hello, World"</inline>
 	</resource>

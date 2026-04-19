@@ -1,5 +1,6 @@
 package com.srilakshmikanthanp.resources.parser.yml;
 
+import com.srilakshmikanthanp.resources.context.Context;
 import com.srilakshmikanthanp.resources.parser.ResourceParser;
 import com.srilakshmikanthanp.resources.parser.ResourceParserException;
 import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
@@ -11,12 +12,12 @@ import com.srilakshmikanthanp.resources.tree.resource.body.ResourceFieldType;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class YmlResourceParserV1 implements ResourceParser {
-  private static final String PACKAGE_KEY = "package";
   private static final String NAME_KEY = "name";
-  private static final String IMPLEMENTING_KEY = "implementing";
   private static final String RESOURCES_KEY = "resources";
   private static final String INLINE_KEY = "inline";
   private static final String FILE_KEY = "file";
@@ -50,30 +51,19 @@ public class YmlResourceParserV1 implements ResourceParser {
 
   @SuppressWarnings("unchecked")
   @Override
-  public ResourceBundleNode parse(InputStream stream) {
+  public ResourceBundleNode parse(Context context, InputStream stream) {
     Map<String, Object> root = new Yaml().load(stream);
 
     if (root == null) {
       throw new ResourceParserException("Empty YAML document");
     }
 
-    Object packageName = root.get(PACKAGE_KEY);
     Object bundleName = root.get(NAME_KEY);
-    Object implementing = root.get(IMPLEMENTING_KEY);
-
-    if (!(packageName instanceof String)) {
-      throw new ResourceParserException(String.format("Missing required '%s' field", PACKAGE_KEY));
-    }
 
     if (!(bundleName instanceof String)) {
       throw new ResourceParserException(String.format("Missing required '%s' field", NAME_KEY));
     }
 
-    if (implementing != null && !(implementing instanceof String)) {
-      throw new ResourceParserException(String.format("Missing required '%s' field", IMPLEMENTING_KEY));
-    }
-
-    ResourceBundleNode bundle = new ResourceBundleNode((String) packageName, (String) bundleName, (String) implementing);
     Object resources = root.get(RESOURCES_KEY);
 
     if (resources == null) {
@@ -84,10 +74,12 @@ public class YmlResourceParserV1 implements ResourceParser {
       throw new ResourceParserException(String.format("'%s' field must be a map of resource names to resource definitions", RESOURCES_KEY));
     }
 
+    List<ResourceNode> resourceNodes = new LinkedList<>();
+
     for (var entry : ((Map<String, Object>) resources).entrySet()) {
-      bundle.addResource(parseResource(entry.getKey(), entry.getValue()));
+      resourceNodes.add(parseResource(entry.getKey(), entry.getValue()));
     }
 
-    return bundle;
+    return new ResourceBundleNode((String) bundleName, resourceNodes);
   }
 }

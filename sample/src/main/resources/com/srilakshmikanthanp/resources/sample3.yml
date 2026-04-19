@@ -1,7 +1,7 @@
-name: Sample1Yml
+name: Sample3Yml
 
 resources:
-  # Inline is default, so it can be omitted
+  # inline is the default type, so we can omit it and directly provide the command
   print: echo "Hello, World"
 
   config:

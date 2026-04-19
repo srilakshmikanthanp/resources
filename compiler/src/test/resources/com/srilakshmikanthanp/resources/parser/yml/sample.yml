@@ -1,6 +1,4 @@
-package: com.srilakshmikanthanp.resources
 name: TestYml
-implementing: com.srilakshmikanthanp.resources.TestResource
 
 resources:
   echo:

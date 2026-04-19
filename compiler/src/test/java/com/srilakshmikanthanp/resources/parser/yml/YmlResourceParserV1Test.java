@@ -1,6 +1,9 @@
 package com.srilakshmikanthanp.resources.parser.yml;
 
 
+import com.srilakshmikanthanp.resources.context.Context;
+import com.srilakshmikanthanp.resources.context.resource.PackageResourceElement;
+import com.srilakshmikanthanp.resources.context.resource.ResourceElement;
 import com.srilakshmikanthanp.resources.parser.ResourceParser;
 import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.FileResourceBodyNode;
@@ -18,21 +21,22 @@ public class YmlResourceParserV1Test {
   @Test
   public void shouldParseXml() throws Exception {
     try (InputStream stream = this.getClass().getResourceAsStream("sample.yml")) {
-      ResourceBundleNode node = parser.parse(stream);
+      ResourceElement resourceElement = new PackageResourceElement("com.srilakshmikanthanp.resources");
+      Context context = new Context(resourceElement);
+      ResourceBundleNode node = parser.parse(context, stream);
       
-      assertEquals("com.srilakshmikanthanp.resources", node.getPackageName());
-      assertEquals("TestYml", node.getName());
-      assertEquals("com.srilakshmikanthanp.resources.TestResource", node.getImplementing().orElse(null));
-      assertEquals(3, node.getResources().size());
+      assertEquals("com.srilakshmikanthanp.resources", resourceElement.packageName());
+      assertEquals("TestYml", node.name());
+      assertEquals(3, node.resources().size());
 
-      assertEquals("echo", node.getResources().get(0).getName());
-      assertInstanceOf(InlineResourceBodyNode.class, node.getResources().get(0).getBody());
+      assertEquals("echo", node.resources().get(0).name());
+      assertInstanceOf(InlineResourceBodyNode.class, node.resources().get(0).body());
 
-      assertEquals("print", node.getResources().get(1).getName());
-      assertInstanceOf(InlineResourceBodyNode.class, node.getResources().get(1).getBody());
+      assertEquals("print", node.resources().get(1).name());
+      assertInstanceOf(InlineResourceBodyNode.class, node.resources().get(1).body());
 
-      assertEquals("config", node.getResources().get(2).getName());
-      assertInstanceOf(FileResourceBodyNode.class, node.getResources().get(2).getBody());
+      assertEquals("config", node.resources().get(2).name());
+      assertInstanceOf(FileResourceBodyNode.class, node.resources().get(2).body());
     }
   }
 }

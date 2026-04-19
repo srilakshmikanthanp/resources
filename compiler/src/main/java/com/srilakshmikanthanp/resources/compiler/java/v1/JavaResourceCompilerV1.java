@@ -3,6 +3,10 @@ package com.srilakshmikanthanp.resources.compiler.java.v1;
 import com.palantir.javapoet.*;
 import com.srilakshmikanthanp.resources.compiler.CompiledResource;
 import com.srilakshmikanthanp.resources.compiler.ResourceCompiler;
+import com.srilakshmikanthanp.resources.context.resource.ClassResourceElement;
+import com.srilakshmikanthanp.resources.context.Context;
+import com.srilakshmikanthanp.resources.context.resource.InterfaceResourceElement;
+import com.srilakshmikanthanp.resources.context.resource.PackageResourceElement;
 import com.srilakshmikanthanp.resources.resource.FileResource;
 import com.srilakshmikanthanp.resources.resource.InlineResource;
 import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
@@ -54,42 +58,40 @@ public class JavaResourceCompilerV1 implements ResourceCompiler {
     return MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build();
   }
 
-  private FieldSpec instanceField(JavaResourceCompilerContext ctx) {
-    return FieldSpec.builder(ClassName.get(ctx.packageName(), ctx.className()), "INSTANCE", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-      .initializer("new $T()", ClassName.get(ctx.packageName(), ctx.className()))
+  private FieldSpec instanceField(String packageName, String className) {
+    return FieldSpec.builder(ClassName.get(packageName, className), "INSTANCE", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+      .initializer("new $T()", ClassName.get(packageName, className))
       .build();
   }
 
 	@Override
-	public List<CompiledResource> compile(ResourceBundleNode bundle) {
-		JavaResourceCompilerContext ctx = new JavaResourceCompilerContext(bundle.getPackageName(), bundle.getName());
-		TypeSpec.Builder resourceBuilder = TypeSpec.classBuilder(bundle.getName()).addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+	public List<CompiledResource> compile(Context context, ResourceBundleNode bundle) {
+		TypeSpec.Builder resourceBuilder = TypeSpec.classBuilder(bundle.name()).addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
-    resourceBuilder.addField(instanceField(ctx));
+    resourceBuilder.addField(instanceField(context.resourceElement().packageName(), bundle.name()));
     resourceBuilder.addMethod(constructor());
 
-    if (bundle.getImplementing().isPresent()) {
-      resourceBuilder.addSuperinterface(ClassName.get(bundle.getPackageName(), bundle.getImplementing().get()));
+    switch (context.resourceElement()) {
+      case InterfaceResourceElement element -> resourceBuilder.addSuperinterface(ClassName.get(element.packageName(), element.name()));
+      case ClassResourceElement element -> resourceBuilder.superclass(ClassName.get(element.packageName(), element.name()));
+      case PackageResourceElement ignored -> {}
     }
 
-		for (ResourceNode resource : bundle.getResources()) {
-			if (resource.getBody() instanceof InlineResourceBodyNode) {
-        resourceBuilder.addMethod(inlineResource(resource.getName(), (InlineResourceBodyNode) resource.getBody()));
-			} else if (resource.getBody() instanceof FileResourceBodyNode) {
-        resourceBuilder.addMethod(fileResource(resource.getName(), (FileResourceBodyNode) resource.getBody()));
-			} else {
-				throw new IllegalArgumentException("Unsupported resource body type: " + resource.getBody().getClass().getName());
-			}
+		for (ResourceNode resource : bundle.resources()) {
+      switch (resource.body()) {
+        case InlineResourceBodyNode body -> resourceBuilder.addMethod(inlineResource(resource.name(), body));
+        case FileResourceBodyNode body -> resourceBuilder.addMethod(fileResource(resource.name(), body));
+      }
 		}
 
 		TypeSpec resource = resourceBuilder.build();
 
 		try {
-			JavaFile javaFile = JavaFile.builder(bundle.getPackageName(), resource).build();
+			JavaFile javaFile = JavaFile.builder(context.resourceElement().packageName(), resource).build();
 			ArrayList<CompiledResource> compiledResources = new ArrayList<>();
 			StringBuilder output = new StringBuilder();
 			javaFile.writeTo(output);
-			compiledResources.add(new CompiledResource(bundle.getPackageName(), resource.name(), output.toString()));
+			compiledResources.add(new CompiledResource(context.resourceElement().packageName(), resource.name(), output.toString()));
 			return compiledResources;
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);

@@ -2,6 +2,7 @@ package com.srilakshmikanthanp.resources;
 
 import com.srilakshmikanthanp.resources.compiler.CompiledResource;
 import com.srilakshmikanthanp.resources.compiler.ResourceCompiler;
+import com.srilakshmikanthanp.resources.context.Context;
 import com.srilakshmikanthanp.resources.parser.ResourceParser;
 import com.srilakshmikanthanp.resources.preprocessor.ResourcePreprocessor;
 import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
@@ -13,8 +14,8 @@ import java.util.List;
 public class Orchestrator {
   private final List<ResourcePreprocessor> preprocessors = new ArrayList<>();
 
-  private ResourceBundleNode preprocess(ResourceBundleNode resourceBundle) {
-    return preprocessors.stream().reduce(resourceBundle, (bundle, preprocessor) -> preprocessor.process(bundle), (a, b) -> b);
+  private ResourceBundleNode preprocess(Context context, ResourceBundleNode resourceBundle) {
+    return preprocessors.stream().reduce(resourceBundle, (bundle, preprocessor) -> preprocessor.process(context, bundle), (a, b) -> b);
   }
 
   public void addPreprocessor(ResourcePreprocessor preprocessor) {
@@ -25,7 +26,7 @@ public class Orchestrator {
     return preprocessors.remove(preprocessor);
   }
 
-  public List<CompiledResource> compile(ResourceParser parser, ResourceCompiler compiler, InputStream input) {
-    return compiler.compile(preprocess(parser.parse(input)));
+  public List<CompiledResource> compile(Context context, ResourceParser parser, ResourceCompiler compiler, InputStream input) {
+    return compiler.compile(context, preprocess(context, parser.parse(context, input)));
   }
 }

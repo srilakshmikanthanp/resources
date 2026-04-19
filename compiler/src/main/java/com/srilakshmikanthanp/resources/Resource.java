@@ -6,7 +6,7 @@ import com.srilakshmikanthanp.resources.parser.ParserType;
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.PACKAGE)
+@Target({ElementType.PACKAGE, ElementType.TYPE})
 @Repeatable(Resources.class)
 public @interface Resource {
   CompilerType compiler();

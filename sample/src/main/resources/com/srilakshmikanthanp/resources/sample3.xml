@@ -1,4 +1,4 @@
-<resources name="Sample1Xml">
+<resources name="Sample3Xml">
 	<resource name="echo">
 		<inline>echo "Hello, World"</inline>
 	</resource>

@@ -5,12 +5,22 @@ import java.io.IOException;
 
 public class Main {
   public static void main(String[] args) throws IOException {
-    // With MainResource Interface
-    for (MainResource resource : new MainResource[]{ Sample1Xml.INSTANCE, Sample1Yml.INSTANCE }) {
-      System.out.println(resource.echo());
+    // With MainResourceClass type
+    for (MainResourceClass resource : new MainResourceClass[]{ Sample3Xml.INSTANCE, Sample3Yml.INSTANCE }) {
       try (var stream = resource.config()) {
         System.out.println(new String(stream.readAllBytes()));
       }
+      System.out.println(resource.echo());
+      System.out.println(resource.print());
+    }
+
+    // With MainResource type
+    for (MainResource resource : new MainResource[]{ Sample1Xml.INSTANCE, Sample1Yml.INSTANCE }) {
+      try (var stream = resource.config()) {
+        System.out.println(new String(stream.readAllBytes()));
+      }
+      System.out.println(resource.echo());
+      System.out.println(resource.print());
     }
 
     // Without Interface

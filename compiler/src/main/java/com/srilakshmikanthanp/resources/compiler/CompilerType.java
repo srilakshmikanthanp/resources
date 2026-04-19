@@ -1,7 +1,9 @@
 package com.srilakshmikanthanp.resources.compiler;
 
 import com.srilakshmikanthanp.resources.compiler.java.v1.JavaResourceCompilerV1;
+import lombok.Getter;
 
+@Getter
 public enum CompilerType {
 	JAVA_V1(new JavaResourceCompilerV1());
 
@@ -9,9 +11,5 @@ public enum CompilerType {
 
 	CompilerType(ResourceCompiler compiler) {
 		this.compiler = compiler;
-	}
-
-	public ResourceCompiler getCompiler() {
-		return this.compiler;
 	}
 }

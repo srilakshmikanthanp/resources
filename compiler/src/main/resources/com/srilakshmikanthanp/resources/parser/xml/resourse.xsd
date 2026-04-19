@@ -42,8 +42,6 @@
         </xs:element>
 			</xs:sequence>
 			<xs:attribute name="name" type="xs:string" use="required"/>
-			<xs:attribute name="package" type="xs:string" use="required"/>
-      <xs:attribute name="implementing" type="xs:string"/>
 		</xs:complexType>
 	</xs:element>
 

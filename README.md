@@ -7,13 +7,18 @@ Resources is a Java annotation processor that allows you to generate Java classe
 Define a resource file in your classpath, for example `sample1.xml`:
 
 ```xml
-<resources package="com.srilakshmikanthanp.resources" name="Sample1Xml" implementing="com.srilakshmikanthanp.resources.MainResource">
+<resources name="Sample1Xml">
   <resource name="echo">
     <inline>echo "Hello, World"</inline>
   </resource>
 
+  <!-- Inline is default, so it can be omitted -->
+  <resource name="print">
+    echo "Hello, World"
+  </resource>
+
   <resource name="config">
-    <file path="config.xml"/>
+    <file path="sample1.xml"/>
   </resource>
 </resources>
 ```
@@ -21,25 +26,29 @@ Define a resource file in your classpath, for example `sample1.xml`:
 Above is equivalent to the following YML,
 
 ```yml
-package: com.srilakshmikanthanp.resources
 name: Sample1Yml
-implementing: com.srilakshmikanthanp.resources.MainResource
 
 resources:
+  # Inline is default, so it can be omitted
+  print: echo "Hello, World"
+
   config:
-    file: config.yml
+    file: sample1.yml
 
   echo:
     inline: echo "Hello, World"
 ```
 
-Then, annotate a package with `@Resource`
+Then, annotate with `@Resource`
 
 ```java
-// package-info.java
 @Resource(path = "sample1.xml", parser = ParserType.XML_V1, compiler = CompilerType.JAVA_V1)
-@Resource(path = "sample2.yml", parser = ParserType.YML_V1, compiler = CompilerType.JAVA_V1)
-package com.srilakshmikanthanp.resources;
+@Resource(path = "sample1.yml", parser = ParserType.YML_V1, compiler = CompilerType.JAVA_V1)
+public interface MainResource {
+  String print();
+  String echo();
+  InputStream config();
+}
 ```
 
 When you compile your project, the annotation processor will generate a
@@ -64,10 +73,17 @@ public final class Sample1Xml implements com.srilakshmikanthanp.resources.MainRe
     return new InlineResource("echo \"Hello, World\"").asString();
   }
 
+  public String print() {
+    return new InlineResource("\n"
+      + "    echo \"Hello, World\"\n"
+      + "  ").asString();
+  }
+
   public InputStream config() {
-    return new FileResource(getClass().getResource("config.xml").getPath()).asStream();
+    return new FileResource(getClass().getResource("sample1.xml").getPath()).asStream();
   }
 }
+
 ```
 
 ```java
@@ -85,14 +101,30 @@ public final class Sample1Yml implements com.srilakshmikanthanp.resources.MainRe
   }
 
   public InputStream config() {
-    return new FileResource(getClass().getResource("config.yml").getPath()).asStream();
+    return new FileResource(getClass().getResource("sample1.yml").getPath()).asStream();
   }
 
   public String echo() {
     return new InlineResource("echo \"Hello, World\"").asString();
   }
+
+  public String print() {
+    return new InlineResource("echo \"Hello, World\"").asString();
+  }
 }
+
 ```
 
-Implementing interface in the resource file is optional. If you don't specify it, the generated class
-will not implement any interface. But it is good for decoupling.
+Interface is optional. If you don't need it, annotate in @Resource in package-info.java file
+the generated class will not implement any interface. But is good for decoupling.
+
+```java
+@Resource(path = "sample2.xml", parser = ParserType.XML_V1, compiler = CompilerType.JAVA_V1)
+@Resource(path = "sample2.yml", parser = ParserType.YML_V1, compiler = CompilerType.JAVA_V1)
+package com.srilakshmikanthanp.resources;
+
+import com.srilakshmikanthanp.resources.compiler.CompilerType;
+import com.srilakshmikanthanp.resources.parser.ParserType;
+```
+
+For more details, please refer to the [sample](./sample) module.

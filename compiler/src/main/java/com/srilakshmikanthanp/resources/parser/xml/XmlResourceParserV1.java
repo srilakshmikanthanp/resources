@@ -1,5 +1,6 @@
 package com.srilakshmikanthanp.resources.parser.xml;
 
+import com.srilakshmikanthanp.resources.context.Context;
 import com.srilakshmikanthanp.resources.parser.ResourceParser;
 import com.srilakshmikanthanp.resources.parser.ResourceParserException;
 import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
@@ -17,15 +18,14 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 public class XmlResourceParserV1 implements ResourceParser {
   private static final String SCHEMA_RESOURCE_PATH = "resourse.xsd";
-  private static final String PACKAGE_ATTR = "package";
-  private static final String IMPLEMENTING_ATTR = "implementing";
   private static final String NAME_ATTR = "name";
   private static final String INLINE_TAG = "inline";
   private static final String FILE_TAG = "file";
@@ -33,20 +33,17 @@ public class XmlResourceParserV1 implements ResourceParser {
   private static final String TYPE_ATTR = "type";
 
   private ResourceBundleNode parseResourceBundleNode(Element element) {
-    String packageName = element.getAttribute(PACKAGE_ATTR);
-    String name = element.getAttribute(NAME_ATTR);
-    String implementing = element.hasAttribute(IMPLEMENTING_ATTR) ? element.getAttribute(IMPLEMENTING_ATTR) : null;
-    ResourceBundleNode bundle = new ResourceBundleNode(packageName, name, implementing);
-    this.parseResources(bundle, element);
-    return bundle;
+    return new ResourceBundleNode(element.getAttribute(NAME_ATTR), this.parseResources(element));
   }
 
-  private void parseResources(ResourceBundleNode bundle, Element element) {
+  private List<ResourceNode> parseResources(Element element) {
+    List<ResourceNode> resources = new LinkedList<>();
     for (int i = 0; i < element.getChildNodes().getLength(); i++) {
       if (element.getChildNodes().item(i).getNodeType() == Element.ELEMENT_NODE) {
-        bundle.addResource(parseResourceNode((Element) element.getChildNodes().item(i)));
+        resources.add(parseResourceNode((Element) element.getChildNodes().item(i)));
       }
     }
+    return resources;
   }
 
   private ResourceNode parseResourceNode(Element element) {
@@ -71,19 +68,12 @@ public class XmlResourceParserV1 implements ResourceParser {
     }
   }
 
-  private Schema getSchema() throws SAXException, IOException {
-    try (InputStream schemaStream = XmlResourceParserV1.class.getResourceAsStream(SCHEMA_RESOURCE_PATH)) {
-      if (schemaStream == null) throw new IllegalStateException("XSD schema not found at: " + SCHEMA_RESOURCE_PATH);
-      return SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new StreamSource(schemaStream));
-    }
-  }
-
   @Override
-  public ResourceBundleNode parse(InputStream stream) {
-    try {
+  public ResourceBundleNode parse(Context context, InputStream stream) {
+    try (InputStream schemaStream = XmlResourceParserV1.class.getResourceAsStream(SCHEMA_RESOURCE_PATH)) {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setNamespaceAware(true);
-      factory.setSchema(getSchema());
+      factory.setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new StreamSource(schemaStream)));
       DocumentBuilder builder = factory.newDocumentBuilder();
       builder.setErrorHandler(new XmlResourceParserErrorHandler());
       Document document = builder.parse(stream);
