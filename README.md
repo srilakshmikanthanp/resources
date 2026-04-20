@@ -121,8 +121,8 @@ public final class Sample1Yml implements com.srilakshmikanthanp.resources.MainRe
 }
 ```
 
-Interface is optional. If you don't need it, annotate in @Resource in package-info.java file
-the generated class will not implement any interface. But is good for decoupling.
+Interface is optional. If you don't need it, annotate in `@Resource` in `package-info.java` file
+the generated class will not implement any interface. But it is good for decoupling.
 
 ```java
 @Resource(path = "sample2.xml", parser = ParserType.XML_V1, compiler = CompilerType.JAVA_V1)
