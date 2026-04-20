@@ -3,7 +3,6 @@ package com.srilakshmikanthanp.resources.compiler.java.v1;
 import com.palantir.javapoet.*;
 import com.srilakshmikanthanp.resources.compiler.CompiledResource;
 import com.srilakshmikanthanp.resources.compiler.ResourceCompiler;
-import com.srilakshmikanthanp.resources.context.resource.ClassResourceElement;
 import com.srilakshmikanthanp.resources.context.Context;
 import com.srilakshmikanthanp.resources.context.resource.InterfaceResourceElement;
 import com.srilakshmikanthanp.resources.context.resource.PackageResourceElement;
@@ -67,7 +66,6 @@ public class JavaResourceCompilerV1 implements ResourceCompiler {
 		TypeSpec.Builder resourceBuilder = TypeSpec.classBuilder(bundle.name()).addModifiers(Modifier.PUBLIC, Modifier.FINAL);
     boolean hasParent = switch (context.resourceElement()) {
       case InterfaceResourceElement ignored -> true;
-      case ClassResourceElement ignored -> true;
       case PackageResourceElement ignored -> false;
     };
 
@@ -76,7 +74,6 @@ public class JavaResourceCompilerV1 implements ResourceCompiler {
 
     switch (context.resourceElement()) {
       case InterfaceResourceElement element -> resourceBuilder.addSuperinterface(ClassName.get(element.packageName(), element.name()));
-      case ClassResourceElement element -> resourceBuilder.superclass(ClassName.get(element.packageName(), element.name()));
       case PackageResourceElement ignored -> {}
     }
 
