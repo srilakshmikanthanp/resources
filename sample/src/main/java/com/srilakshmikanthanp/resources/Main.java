@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class Main {
   public static void main(String[] args) throws IOException {
-    // With MainResourceInterfaceExample type
+    // With MainResource type
     for (MainResource resource : new MainResource[]{ Sample1Xml.INSTANCE, Sample1Yml.INSTANCE }) {
       try (var stream = resource.config()) {
         System.out.println(new String(stream.readAllBytes()));
