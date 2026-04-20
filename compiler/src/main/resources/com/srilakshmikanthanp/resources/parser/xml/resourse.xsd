@@ -14,16 +14,13 @@
       <xs:element name="inline">
         <xs:complexType>
           <xs:simpleContent>
-            <xs:extension base="xs:string">
-              <xs:attribute name="type" type="resourceFieldType"/>
-            </xs:extension>
+            <xs:extension base="xs:string" />
           </xs:simpleContent>
         </xs:complexType>
       </xs:element>
 			<xs:element name="file">
 				<xs:complexType>
 					<xs:attribute name="path" type="xs:string" use="required"/>
-          <xs:attribute name="type" type="resourceFieldType"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:choice>
@@ -38,6 +35,7 @@
               <xs:group ref="inlineOrFile"/>
             </xs:choice>
             <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="type" type="resourceFieldType" use="optional"/>
           </xs:complexType>
         </xs:element>
 			</xs:sequence>

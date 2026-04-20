@@ -12,7 +12,7 @@ import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
 import com.srilakshmikanthanp.resources.tree.resource.ResourceNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.FileResourceBodyNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.InlineResourceBodyNode;
-import com.srilakshmikanthanp.resources.tree.resource.body.ResourceFieldType;
+import com.srilakshmikanthanp.resources.tree.resource.ResourceType;
 
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
@@ -21,21 +21,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JavaResourceCompilerV1 implements ResourceCompiler {
-  private MethodSpec.Builder fileResource(String resourceName, FileResourceBodyNode resourceNode) {
-    return MethodSpec.methodBuilder(resourceName)
+  private MethodSpec.Builder inline(ResourceNode resource, InlineResourceBodyNode body) {
+    return MethodSpec.methodBuilder(resource.name())
       .addModifiers(Modifier.PUBLIC)
-      .returns(getResourceClass(resourceNode.type()))
-      .addStatement("return $L",  CodeBlock.of("new $T(getClass().getResource($S).getPath()).$L", FileResource.class, resourceNode.path(), getConversion(resourceNode.type())));
+      .returns(getResourceClass(resource.type()))
+      .addStatement("return $L", CodeBlock.of("new $T($S).$L", InlineResource.class, body.content(), getConversion(resource.type())));
   }
 
-	private MethodSpec.Builder inlineResource(String resourceName, InlineResourceBodyNode resourceNode) {
-		return MethodSpec.methodBuilder(resourceName)
+  private MethodSpec.Builder file(ResourceNode resource, FileResourceBodyNode body) {
+    return MethodSpec.methodBuilder(resource.name())
       .addModifiers(Modifier.PUBLIC)
-      .returns(getResourceClass(resourceNode.type()))
-      .addStatement("return $L", CodeBlock.of("new $T($S).$L", InlineResource.class, resourceNode.content(), getConversion(resourceNode.type())));
-	}
+      .returns(getResourceClass(resource.type()))
+      .addStatement("return $L",  CodeBlock.of("new $T(getClass().getResource($S).getPath()).$L", FileResource.class, body.path(), getConversion(resource.type())));
+  }
 
-  private Class<?> getResourceClass(ResourceFieldType type) {
+  private Class<?> getResourceClass(ResourceType type) {
     return switch (type) {
       case STRING -> String.class;
       case BYTES -> byte[].class;
@@ -43,7 +43,7 @@ public class JavaResourceCompilerV1 implements ResourceCompiler {
     };
   }
 
-  private String getConversion(ResourceFieldType type) {
+  private String getConversion(ResourceType type) {
     return switch (type) {
       case STRING -> "asString()";
       case BYTES -> "asBytes()";
@@ -81,8 +81,8 @@ public class JavaResourceCompilerV1 implements ResourceCompiler {
 
 		for (ResourceNode resource : bundle.resources()) {
       switch (resource.body()) {
-        case InlineResourceBodyNode body -> methods.add(inlineResource(resource.name(), body));
-        case FileResourceBodyNode body -> methods.add(fileResource(resource.name(), body));
+        case InlineResourceBodyNode body -> methods.add(inline(resource, body));
+        case FileResourceBodyNode body -> methods.add(file(resource, body));
       }
 		}
 

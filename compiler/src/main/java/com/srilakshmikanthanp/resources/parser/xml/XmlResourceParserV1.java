@@ -8,7 +8,7 @@ import com.srilakshmikanthanp.resources.tree.resource.ResourceNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.FileResourceBodyNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.InlineResourceBodyNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.ResourceBodyNode;
-import com.srilakshmikanthanp.resources.tree.resource.body.ResourceFieldType;
+import com.srilakshmikanthanp.resources.tree.resource.ResourceType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -21,6 +21,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,24 +48,21 @@ public class XmlResourceParserV1 implements ResourceParser {
   }
 
   private ResourceNode parseResourceNode(Element element) {
-    return new ResourceNode(element.getAttribute(NAME_ATTR), parseResourceBody(element));
+    ResourceBodyNode body = parseResourceBody(element);
+    ResourceType type = element.hasAttribute(TYPE_ATTR) ? ResourceType.valueOf(element.getAttribute(TYPE_ATTR)) : ResourceType.infer(body);
+    return new ResourceNode(element.getAttribute(NAME_ATTR), parseResourceBody(element), type);
   }
 
   private ResourceBodyNode parseResourceBody(Element node) {
     Element element = (Element) node.getElementsByTagName("*").item(0);
     if (element == null) {
       return new InlineResourceBodyNode(node.getTextContent());
-    }
-    if (element.getTagName().equals(FILE_TAG)) {
-      ResourceFieldType type = element.hasAttribute(TYPE_ATTR) ? ResourceFieldType.valueOf(element.getAttribute(TYPE_ATTR)) : ResourceFieldType.STREAM;
-      String filePath = element.getAttribute(PATH_ATTR);
-      return new FileResourceBodyNode(filePath, type);
+    } else if (element.getTagName().equals(FILE_TAG)) {
+      return new FileResourceBodyNode(element.getAttribute(PATH_ATTR));
     } else if (element.getTagName().equals(INLINE_TAG)) {
-      ResourceFieldType type = element.hasAttribute(TYPE_ATTR) ? ResourceFieldType.valueOf(element.getAttribute(TYPE_ATTR)) : ResourceFieldType.STRING;
-      String content = element.getTextContent();
-      return new InlineResourceBodyNode(content, type);
+      return new InlineResourceBodyNode(element.getTextContent());
     } else {
-      throw new ResourceParserException("Unsupported resource type: " + element.getTagName());
+      throw new IllegalStateException("This should not happen, the XML should have been validated against the schema");
     }
   }
 
@@ -72,15 +70,15 @@ public class XmlResourceParserV1 implements ResourceParser {
   public ResourceBundleNode parse(Context context, InputStream stream) {
     try (InputStream schemaStream = XmlResourceParserV1.class.getResourceAsStream(SCHEMA_RESOURCE_PATH)) {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setNamespaceAware(true);
       factory.setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new StreamSource(schemaStream)));
+      factory.setNamespaceAware(true);
       DocumentBuilder builder = factory.newDocumentBuilder();
       builder.setErrorHandler(new XmlResourceParserErrorHandler());
       Document document = builder.parse(stream);
       document.getDocumentElement().normalize();
       return parseResourceBundleNode(document.getDocumentElement());
     } catch (ParserConfigurationException | SAXException | IOException e) {
-      throw new ResourceParserException("Failed to parse XML resource", e);
+      throw new UndeclaredThrowableException(e);
     }
   }
 }

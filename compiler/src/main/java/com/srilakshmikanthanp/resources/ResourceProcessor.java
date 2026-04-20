@@ -52,7 +52,6 @@ public class ResourceProcessor extends AbstractProcessor {
   private ResourceElement getResourceElement(String packageName, Element element) {
     return switch (element) {
       case TypeElement typeElement when typeElement.getKind().isInterface() -> new InterfaceResourceElement(packageName, typeElement.getQualifiedName().toString());
-      case TypeElement typeElement when typeElement.getKind().isClass() -> new ClassResourceElement(packageName, typeElement.getQualifiedName().toString());
       case PackageElement ignored -> new PackageResourceElement(packageName);
       default -> throw new IllegalArgumentException("Only interfaces and packages can be annotated with @Resource or @Resources");
     };
