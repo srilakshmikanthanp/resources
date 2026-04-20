@@ -2,13 +2,12 @@ package com.srilakshmikanthanp.resources.parser.xml;
 
 import com.srilakshmikanthanp.resources.context.Context;
 import com.srilakshmikanthanp.resources.parser.ResourceParser;
-import com.srilakshmikanthanp.resources.parser.ResourceParserException;
 import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
 import com.srilakshmikanthanp.resources.tree.resource.ResourceNode;
+import com.srilakshmikanthanp.resources.tree.resource.ResourceType;
 import com.srilakshmikanthanp.resources.tree.resource.body.FileResourceBodyNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.InlineResourceBodyNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.ResourceBodyNode;
-import com.srilakshmikanthanp.resources.tree.resource.ResourceType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;

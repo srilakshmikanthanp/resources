@@ -18,7 +18,6 @@ import org.yaml.snakeyaml.nodes.ScalarNode;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.LinkedList;
 import java.util.List;
 
 public class YmlResourceParserV1 implements ResourceParser {
