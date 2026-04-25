@@ -10,7 +10,17 @@ public class InlineResource extends AbstractResource {
 		this.content = content;
 	}
 
-	@Override
+  @Override
+  public String asString() {
+    return content;
+  }
+
+  @Override
+  public byte[] asBytes() {
+    return content.getBytes();
+  }
+
+  @Override
 	public InputStream asStream() {
 		return new ByteArrayInputStream(content.getBytes());
 	}
