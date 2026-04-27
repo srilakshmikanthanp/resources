@@ -8,18 +8,7 @@ Define a resource file in your classpath, for example `sample1.xml`:
 
 ```xml
 <resources name="Sample1Xml">
-  <resource name="echo">
-    <inline>echo "Hello, World"</inline>
-  </resource>
-
-  <!-- Inline is default, so it can be omitted -->
-  <resource name="print">
-    echo "Hello, World"
-  </resource>
-
-  <resource name="config">
-    <file path="sample1.xml"/>
-  </resource>
+  <resource name="echo">echo "Hello, World"</resource>
 </resources>
 ```
 
@@ -29,14 +18,7 @@ Above is equivalent to the following YML,
 name: Sample1Yml
 
 resources:
-  # Inline is default, so it can be omitted
-  print: echo "Hello, World"
-
-  config:
-    file: sample1.yml
-
-  echo:
-    inline: echo "Hello, World"
+  echo: echo "Hello, World"
 ```
 
 Then, annotate with `@Resource`
@@ -45,9 +27,7 @@ Then, annotate with `@Resource`
 @Resource(path = "sample1.xml", parser = ParserType.XML_V1, compiler = CompilerType.JAVA_V1)
 @Resource(path = "sample1.yml", parser = ParserType.YML_V1, compiler = CompilerType.JAVA_V1)
 public interface MainResource {
-  String print();
   String echo();
-  InputStream config();
 }
 ```
 
@@ -59,12 +39,12 @@ files, it will generate following classes:
 package com.srilakshmikanthanp.resources;
 
 import com.srilakshmikanthanp.resources.resource.FileResource;
-import com.srilakshmikanthanp.resources.resource.InlineResource;
+import com.srilakshmikanthanp.resources.resource.InlineStringResource;
 import java.io.InputStream;
 import java.lang.Override;
 import java.lang.String;
 
-public final class Sample1Xml implements com.srilakshmikanthanp.resources.MainResource {
+public final class Sample1Xml implements com.srilakshmikanthanp.resources.SeparatedExampleCommands {
   public static final Sample1Xml INSTANCE = new Sample1Xml();
 
   private Sample1Xml() {
@@ -74,18 +54,6 @@ public final class Sample1Xml implements com.srilakshmikanthanp.resources.MainRe
   public String echo() {
     return new InlineResource("echo \"Hello, World\"").asString();
   }
-
-  @Override
-  public String print() {
-    return new InlineResource("\n"
-      + "    echo \"Hello, World\"\n"
-      + "  ").asString();
-  }
-
-  @Override
-  public InputStream config() {
-    return new FileResource(getClass().getResource("sample1.xml").getPath()).asStream();
-  }
 }
 ```
 
@@ -93,30 +61,31 @@ public final class Sample1Xml implements com.srilakshmikanthanp.resources.MainRe
 package com.srilakshmikanthanp.resources;
 
 import com.srilakshmikanthanp.resources.resource.FileResource;
-import com.srilakshmikanthanp.resources.resource.InlineResource;
+import com.srilakshmikanthanp.resources.resource.InlineStringResource;
 import java.io.InputStream;
 import java.lang.Override;
 import java.lang.String;
 
-public final class Sample1Yml implements com.srilakshmikanthanp.resources.MainResource {
+public final class Sample1Yml implements com.srilakshmikanthanp.resources.SeparatedExampleCommands {
   public static final Sample1Yml INSTANCE = new Sample1Yml();
 
   private Sample1Yml() {
   }
-
-  @Override
-  public String print() {
-    return new InlineResource("echo \"Hello, World\"").asString();
-  }
-
-  @Override
-  public InputStream config() {
-    return new FileResource(getClass().getResource("sample1.yml").getPath()).asStream();
-  }
-
+  
   @Override
   public String echo() {
     return new InlineResource("echo \"Hello, World\"").asString();
+  }
+}
+```
+
+Use generated classes
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    System.out.println(Sample1Xml.INSTANCE.echo());
+    System.out.println(Sample1Yml.INSTANCE.echo());
   }
 }
 ```
@@ -133,4 +102,88 @@ import com.srilakshmikanthanp.resources.compiler.CompilerType;
 import com.srilakshmikanthanp.resources.parser.ParserType;
 ```
 
-For more details, please refer to the [sample](./sample) module.
+### Resource Types
+
+Resources supports multiple return types for each resource. In most cases, you don’t need to
+specify a type explicitly—it is inferred automatically based on how the resource is defined.
+
+#### 1. `STRING`
+
+* Returns resource content as `String`
+* Default for inline resources
+
+```xml
+<resource name="helloWorld">
+  echo "Hello, World!"
+</resource>
+```
+
+---
+
+#### 2. `STREAM`
+
+* Returns resource as `InputStream`
+* Default for file-based resources
+
+```xml
+<resource name="script">
+  <file path="script.sh" />
+</resource>
+```
+
+---
+
+#### 3. `BYTES`
+
+* Returns resource as `byte[]`
+* Useful for binary or raw data access
+
+```xml
+<resource name="binaryFile" type="BYTES">
+  <file path="data.bin" />
+</resource>
+```
+
+---
+
+#### Overriding Default Type
+
+You can explicitly specify a type using the `type` attribute:
+
+```xml
+<resource name="findGitProject" type="STRING">
+  <file path="FindGitProject.sh" />
+</resource>
+```
+
+---
+
+#### Optimization Behavior
+
+If a file-based resource is declared as `STRING`:
+
+```xml
+<resource name="script" type="STRING">
+  <file path="script.sh" />
+</resource>
+```
+
+Or, If a file-based resource is declared as `BYTES`:
+
+```xml
+<resource name="script" type="BYTES">
+  <file path="file.bin" />
+</resource>
+```
+
+The processor will:
+
+* Read the file at compile time
+* Inline its content as a `String` or `byte[]` in the generated code
+* Generate code similar to an inline resource
+
+Benefits
+
+* No runtime file access
+* Better performance
+* Same behavior as inline resources
