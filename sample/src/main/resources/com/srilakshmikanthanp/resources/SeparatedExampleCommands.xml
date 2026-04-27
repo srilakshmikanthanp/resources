@@ -1,0 +1,13 @@
+<resources name="SeparatedExampleLinuxCommands">
+  <resource name="helloWorld">
+    echo "Hello, World!"
+  </resource>
+
+  <resource name="listFiles">
+    ls -la
+  </resource>
+
+  <resource name="findGitProject" type="STRING">
+    <file path="FindGitProject.sh" />
+  </resource>
+</resources>

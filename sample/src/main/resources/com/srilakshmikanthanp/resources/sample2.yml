@@ -1,4 +1,0 @@
-name: Sample2Yml
-
-resources:
-  echo: echo "Hello, World"

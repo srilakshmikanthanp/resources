@@ -1,5 +1,0 @@
-<resources name="Sample2Xml">
-  <resource name="echo">
-    echo "Hello, World"
-  </resource>
-</resources>
