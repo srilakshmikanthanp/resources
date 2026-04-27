@@ -12,18 +12,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Orchestrator {
-  private final List<ResourcePreprocessor> preprocessors = new ArrayList<>();
+  private final List<ResourcePreprocessor> preprocessors;
+
+  public Orchestrator(List<ResourcePreprocessor> preprocessors) {
+    this.preprocessors = preprocessors;
+  }
+
+  public Orchestrator(ResourcePreprocessor... preprocessors) {
+    this.preprocessors = List.of(preprocessors);
+  }
 
   private ResourceBundleNode preprocess(Context context, ResourceBundleNode resourceBundle) {
     return preprocessors.stream().reduce(resourceBundle, (bundle, preprocessor) -> preprocessor.process(context, bundle), (a, b) -> b);
-  }
-
-  public void addPreprocessor(ResourcePreprocessor preprocessor) {
-    preprocessors.add(preprocessor);
-  }
-
-  public boolean removePreprocessor(ResourcePreprocessor preprocessor) {
-    return preprocessors.remove(preprocessor);
   }
 
   public List<CompiledResource> compile(Context context, ResourceParser parser, ResourceCompiler compiler, InputStream input) {

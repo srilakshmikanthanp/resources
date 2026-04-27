@@ -49,7 +49,7 @@ public class YmlResourceParserV1 implements ResourceParser {
 
   private ResourceNode parseResource(String name, Node node) {
     if (node instanceof ScalarNode scalarNode) {
-      ResourceBodyNode body = new InlineResourceBodyNode(scalarNode.getValue());
+      ResourceBodyNode body = InlineResourceBodyNode.of(scalarNode.getValue());
       return new ResourceNode(name, body, ResourceType.infer(body));
     }
 
@@ -62,7 +62,7 @@ public class YmlResourceParserV1 implements ResourceParser {
 
     for (NodeTuple entry : mappingNode.getValue()) {
       switch (asNode(entry.getKeyNode(), ScalarNode.class).getValue()) {
-        case INLINE_KEY -> body = new InlineResourceBodyNode(scalar(entry.getValueNode()).getValue());
+        case INLINE_KEY -> body = InlineResourceBodyNode.of(scalar(entry.getValueNode()).getValue());
         case FILE_KEY -> body = new FileResourceBodyNode(scalar(entry.getValueNode()).getValue());
         case TYPE_KEY -> type = ResourceType.valueOf(scalar(entry.getValueNode()).getValue());
       }

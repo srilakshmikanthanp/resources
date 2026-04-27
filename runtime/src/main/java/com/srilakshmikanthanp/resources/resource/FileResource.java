@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
-public class FileResource extends AbstractResource {
+public class FileResource implements AbstractResource {
 	private final Path path;
 
 	public FileResource(String path) {

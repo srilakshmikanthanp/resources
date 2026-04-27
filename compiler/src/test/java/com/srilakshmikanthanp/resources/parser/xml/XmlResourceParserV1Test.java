@@ -22,7 +22,7 @@ public class XmlResourceParserV1Test {
   public void shouldParseXml() throws Exception {
     try (InputStream stream = this.getClass().getResourceAsStream("sample.xml")) {
       ResourceElement resourceElement = new PackageResourceElement("com.srilakshmikanthanp.resources");
-      Context context = new Context(resourceElement);
+      Context context = new Context(resourceElement, (packageName, path) -> InputStream.nullInputStream());
       ResourceBundleNode node = parser.parse(context, stream);
 
       assertEquals("com.srilakshmikanthanp.resources", resourceElement.packageName());

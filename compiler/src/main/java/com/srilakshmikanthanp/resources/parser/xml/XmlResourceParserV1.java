@@ -55,11 +55,11 @@ public class XmlResourceParserV1 implements ResourceParser {
   private ResourceBodyNode parseResourceBody(Element node) {
     Element element = (Element) node.getElementsByTagName("*").item(0);
     if (element == null) {
-      return new InlineResourceBodyNode(node.getTextContent());
+      return InlineResourceBodyNode.of(node.getTextContent());
     } else if (element.getTagName().equals(FILE_TAG)) {
       return new FileResourceBodyNode(element.getAttribute(PATH_ATTR));
     } else if (element.getTagName().equals(INLINE_TAG)) {
-      return new InlineResourceBodyNode(element.getTextContent());
+      return InlineResourceBodyNode.of(element.getTextContent());
     } else {
       throw new IllegalStateException("This should not happen, the XML should have been validated against the schema");
     }
