@@ -6,8 +6,7 @@ import com.srilakshmikanthanp.resources.context.Context;
 import com.srilakshmikanthanp.resources.context.resource.*;
 import com.srilakshmikanthanp.resources.context.resource.reader.ResourceReader;
 import com.srilakshmikanthanp.resources.parser.ResourceParser;
-import com.srilakshmikanthanp.resources.preprocessor.inliner.FileBytesInliner;
-import com.srilakshmikanthanp.resources.preprocessor.inliner.FileStringInliner;
+import com.srilakshmikanthanp.resources.preprocessor.inliner.FileInliner;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -28,7 +27,7 @@ import java.util.*;
   "com.srilakshmikanthanp.resources.Resources"
 })
 public class ResourceProcessor extends AbstractProcessor {
-  private final Orchestrator orchestrator = new Orchestrator(new FileStringInliner(), new FileBytesInliner());
+  private final Orchestrator orchestrator = new Orchestrator(new FileInliner());
 
   private void process(Context context, String path, ResourceParser parser, ResourceCompiler compiler) throws IOException {
     try (InputStream inputStream = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, context.resourceElement().packageName(), path).openInputStream()) {

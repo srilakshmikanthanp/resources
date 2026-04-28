@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.List;
 
-public class FileBytesInliner implements ResourcePreprocessor {
+public class FileInliner implements ResourcePreprocessor {
   private byte[] readResourceContent(Context context, String path) {
     try (InputStream stream = context.resourceReader().read(context.resourceElement().packageName(), path)) {
       return stream.readAllBytes();
@@ -23,7 +23,9 @@ public class FileBytesInliner implements ResourcePreprocessor {
   }
 
   private ResourceNode transform(Context context, ResourceNode node) {
-    if (node.type() == ResourceType.BYTES && node.body() instanceof FileResourceBodyNode(String path)) {
+    if (node.type() == ResourceType.STRING && node.body() instanceof FileResourceBodyNode(String path)) {
+      return new ResourceNode(node.name(), InlineResourceBodyNode.of(new String(readResourceContent(context, path))), ResourceType.STRING);
+    } else if (node.type() == ResourceType.BYTES && node.body() instanceof FileResourceBodyNode(String path)) {
       return new ResourceNode(node.name(), InlineResourceBodyNode.of(readResourceContent(context, path)), ResourceType.BYTES);
     } else {
       return node;
