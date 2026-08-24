@@ -1,0 +1,7 @@
+{
+  "name": "ProJsonCommands",
+  "resources": {
+    "welcome": "Welcome back, {user}! Account active: {status:boolean}",
+    "discount": "Special offer: {percent:double}% off for {item}!"
+  }
+}

@@ -7,8 +7,8 @@ import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
 import com.srilakshmikanthanp.resources.tree.resource.ResourceNode;
 import com.srilakshmikanthanp.resources.tree.resource.ResourceType;
 import com.srilakshmikanthanp.resources.tree.resource.body.FileResourceBodyNode;
-import com.srilakshmikanthanp.resources.tree.resource.body.InlineResourceBodyNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.ResourceBodyNode;
+import com.srilakshmikanthanp.resources.tree.resource.body.TemplateStringResourceBodyNode;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.Mark;
 import org.yaml.snakeyaml.nodes.MappingNode;
@@ -47,10 +47,20 @@ public class YmlResourceParserV1 implements ResourceParser {
     return node.getValue().stream().map(entry -> parseResource(asNode(entry.getKeyNode(), ScalarNode.class).getValue(), entry.getValueNode())).toList();
   }
 
+  private void validateTemplateType(Node node, ResourceBodyNode body, ResourceType type) {
+    if (body instanceof TemplateStringResourceBodyNode && type != ResourceType.STRING) {
+      throw error(node.getStartMark(), String.format(
+        "Resource has {placeholder} parameters, so it must have type STRING (found %s)", type
+      ));
+    }
+  }
+
   private ResourceNode parseResource(String name, Node node) {
     if (node instanceof ScalarNode scalarNode) {
-      ResourceBodyNode body = InlineResourceBodyNode.of(scalarNode.getValue());
-      return new ResourceNode(name, body, ResourceType.infer(body));
+      ResourceBodyNode body = TemplateStringResourceBodyNode.parse(scalarNode.getValue());
+      ResourceType type = ResourceType.infer(body);
+      validateTemplateType(node, body, type);
+      return new ResourceNode(name, body, type);
     }
 
     if (!(node instanceof MappingNode mappingNode)) {
@@ -62,7 +72,7 @@ public class YmlResourceParserV1 implements ResourceParser {
 
     for (NodeTuple entry : mappingNode.getValue()) {
       switch (asNode(entry.getKeyNode(), ScalarNode.class).getValue()) {
-        case INLINE_KEY -> body = InlineResourceBodyNode.of(scalar(entry.getValueNode()).getValue());
+        case INLINE_KEY -> body = TemplateStringResourceBodyNode.parse(scalar(entry.getValueNode()).getValue());
         case FILE_KEY -> body = new FileResourceBodyNode(scalar(entry.getValueNode()).getValue());
         case TYPE_KEY -> type = ResourceType.valueOf(scalar(entry.getValueNode()).getValue());
       }
@@ -75,6 +85,8 @@ public class YmlResourceParserV1 implements ResourceParser {
     if (type == null) {
       type = ResourceType.infer(body);
     }
+
+    validateTemplateType(node, body, type);
 
     return new ResourceNode(name, body, type);
   }

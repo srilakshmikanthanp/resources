@@ -2,12 +2,13 @@ package com.srilakshmikanthanp.resources.parser.xml;
 
 import com.srilakshmikanthanp.resources.context.Context;
 import com.srilakshmikanthanp.resources.parser.ResourceParser;
+import com.srilakshmikanthanp.resources.parser.ResourceParserException;
 import com.srilakshmikanthanp.resources.tree.ResourceBundleNode;
 import com.srilakshmikanthanp.resources.tree.resource.ResourceNode;
 import com.srilakshmikanthanp.resources.tree.resource.ResourceType;
 import com.srilakshmikanthanp.resources.tree.resource.body.FileResourceBodyNode;
-import com.srilakshmikanthanp.resources.tree.resource.body.InlineResourceBodyNode;
 import com.srilakshmikanthanp.resources.tree.resource.body.ResourceBodyNode;
+import com.srilakshmikanthanp.resources.tree.resource.body.TemplateStringResourceBodyNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -49,17 +50,25 @@ public class XmlResourceParserV1 implements ResourceParser {
   private ResourceNode parseResourceNode(Element element) {
     ResourceBodyNode body = parseResourceBody(element);
     ResourceType type = element.hasAttribute(TYPE_ATTR) ? ResourceType.valueOf(element.getAttribute(TYPE_ATTR)) : ResourceType.infer(body);
-    return new ResourceNode(element.getAttribute(NAME_ATTR), parseResourceBody(element), type);
+
+    if (body instanceof TemplateStringResourceBodyNode && type != ResourceType.STRING) {
+      throw new ResourceParserException(0, 0, String.format(
+        "Resource '%s' has {placeholder} parameters, so it must have type STRING (found %s)",
+        element.getAttribute(NAME_ATTR), type
+      ));
+    }
+
+    return new ResourceNode(element.getAttribute(NAME_ATTR), body, type);
   }
 
   private ResourceBodyNode parseResourceBody(Element node) {
     Element element = (Element) node.getElementsByTagName("*").item(0);
     if (element == null) {
-      return InlineResourceBodyNode.of(node.getTextContent());
+      return TemplateStringResourceBodyNode.parse(node.getTextContent());
     } else if (element.getTagName().equals(FILE_TAG)) {
       return new FileResourceBodyNode(element.getAttribute(PATH_ATTR));
     } else if (element.getTagName().equals(INLINE_TAG)) {
-      return InlineResourceBodyNode.of(element.getTextContent());
+      return TemplateStringResourceBodyNode.parse(element.getTextContent());
     } else {
       throw new IllegalStateException("This should not happen, the XML should have been validated against the schema");
     }

@@ -6,5 +6,7 @@ resources:
 
   print: print "Hello, World"
 
+  greet: "Hello, {name}! Welcome to {place}"
+
   config:
     file: sample.yml

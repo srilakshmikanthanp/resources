@@ -187,3 +187,80 @@ Benefits
 * No runtime file access
 * Better performance
 * Same behavior as inline resources
+
+### Parameterized Templates
+
+Inline `STRING` resources can contain `{paramName}` placeholders. Each distinct
+placeholder becomes a `String` parameter on the generated method, and the
+value is substituted at call time using `String.format`.
+
+```xml
+<resource name="greet">Hello, {name}! Welcome to {place}</resource>
+```
+
+```yaml
+greet: "Hello, {name}! Welcome to {place}"
+```
+
+Generates:
+
+```java
+public String greet(String name, String place) {
+  return String.format("Hello, %1$s! Welcome to %2$s", name, place);
+}
+```
+
+Notes:
+
+* A placeholder repeated in the template (e.g. `{name} ... {name}`) reuses the
+  same method parameter instead of declaring it twice.
+* A literal brace can be written as `{{` / `}}`.
+* Because the value is computed at call time, a resource with placeholders
+  must have (or infer) `type="STRING"`; declaring `BYTES` or `STREAM` on it is
+  a compile-time error.
+* Resources inlined from a `file` (the `STRING`/`BYTES` optimization above)
+  are **not** scanned for placeholders — only text written directly inside
+  `<resource>`/`<inline>` (XML) or as the resource value (YML) is treated as
+  a template, so a data file that happens to contain `{` is never
+  misinterpreted.
+
+### Pro-Level Features
+
+#### 1. Typed Parameterized Templates (`{param:type}`)
+Placeholders can include explicit primitive and object Java types:
+- `{id:long}` $\rightarrow$ `long id`
+- `{count:int}` $\rightarrow$ `int count`
+- `{price:double}` $\rightarrow$ `double price`
+- `{active:boolean}` $\rightarrow$ `boolean active`
+
+```xml
+<resource name="orderSummary">Order #{id:long} total: ${price:double}</resource>
+```
+Generates:
+```java
+public String orderSummary(long id, double price) {
+  return String.format("Order #%1$d total: $%2$s", id, price);
+}
+```
+
+#### 2. JSON & Properties Parsers (`ParserType.JSON_V1` & `ParserType.PROPERTIES_V1`)
+You can now define resource bundles in `.json` or `.properties` files:
+
+**Properties Format (`ParserType.PROPERTIES_V1`)**:
+```properties
+name=ProPropertiesCommands
+greet=Hello, {name}! You have {count:int} new messages.
+order=Order #{id:long} total: ${amount:double}
+```
+
+**JSON Format (`ParserType.JSON_V1`)**:
+```json
+{
+  "name": "ProJsonCommands",
+  "resources": {
+    "welcome": "Welcome back, {user}! Account active: {status:boolean}",
+    "discount": "Special offer: {percent:double}% off for {item}!"
+  }
+}
+```
+

@@ -27,7 +27,7 @@ tasks.named<Test>("test") {
 }
 
 application {
-  mainClass = "com.srilakshmikanthanp.resources.Main"
+  mainClass = "com.srilakshmikanthanp.resources.ProRunner"
 }
 
 tasks.withType<JavaCompile>().configureEach {
