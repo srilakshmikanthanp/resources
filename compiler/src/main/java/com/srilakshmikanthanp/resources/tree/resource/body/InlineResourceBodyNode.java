@@ -1,6 +1,6 @@
 package com.srilakshmikanthanp.resources.tree.resource.body;
 
-public sealed interface InlineResourceBodyNode extends ResourceBodyNode permits InlineBytesResourceBodyNode, InlineStringResourceBodyNode {
+public sealed interface InlineResourceBodyNode extends ResourceBodyNode permits InlineBytesResourceBodyNode, InlineStringResourceBodyNode, TemplateStringResourceBodyNode {
   static InlineResourceBodyNode of(String content) {
     return new InlineStringResourceBodyNode(content);
   }

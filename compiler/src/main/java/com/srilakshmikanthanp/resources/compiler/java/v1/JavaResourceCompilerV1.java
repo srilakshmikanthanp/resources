@@ -16,6 +16,8 @@ import com.srilakshmikanthanp.resources.tree.resource.body.InlineBytesResourceBo
 import com.srilakshmikanthanp.resources.tree.resource.body.InlineResourceBodyNode;
 import com.srilakshmikanthanp.resources.tree.resource.ResourceType;
 import com.srilakshmikanthanp.resources.tree.resource.body.InlineStringResourceBodyNode;
+import com.srilakshmikanthanp.resources.tree.resource.body.ParamSpec;
+import com.srilakshmikanthanp.resources.tree.resource.body.TemplateStringResourceBodyNode;
 
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
@@ -43,6 +45,37 @@ public class JavaResourceCompilerV1 implements ResourceCompiler {
     return switch (body) {
       case InlineStringResourceBodyNode stringBody -> inline(resource, stringBody);
       case InlineBytesResourceBodyNode bytesBody -> inline(resource, bytesBody);
+      case TemplateStringResourceBodyNode templateBody -> template(resource, templateBody);
+    };
+  }
+
+  private MethodSpec.Builder template(ResourceNode resource, TemplateStringResourceBodyNode body) {
+    MethodSpec.Builder builder = MethodSpec.methodBuilder(resource.name())
+      .addModifiers(Modifier.PUBLIC)
+      .returns(getResourceClass(resource.type()));
+
+    for (ParamSpec param : body.params()) {
+      builder.addParameter(getParamTypeName(param), param.name());
+    }
+
+    CodeBlock.Builder arguments = CodeBlock.builder().add("$S", body.format());
+    for (ParamSpec param : body.params()) {
+      arguments.add(", $L", param.name());
+    }
+
+    return builder.addStatement("return $T.format($L)", String.class, arguments.build());
+  }
+
+  private TypeName getParamTypeName(ParamSpec param) {
+    return switch (param.normalizedType()) {
+      case "int" -> TypeName.INT;
+      case "long" -> TypeName.LONG;
+      case "double" -> TypeName.DOUBLE;
+      case "float" -> TypeName.FLOAT;
+      case "boolean" -> TypeName.BOOLEAN;
+      case "short" -> TypeName.SHORT;
+      case "byte" -> TypeName.BYTE;
+      default -> ClassName.get("java.lang", param.normalizedType());
     };
   }
 

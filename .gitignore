@@ -3,3 +3,12 @@
 
 # Ignore Gradle build output directory
 build
+bin/
+*.class
+
+# Ignore IDE configuration files
+.idea/
+.vscode/
+.settings/
+.classpath
+.project
